@@ -31,3 +31,9 @@
 .buyer-discover .business-cover.has-product-photo{height:210px}@media(max-width:720px){.buyer-discover .business-cover.has-product-photo{height:190px}}
 
 .buyer-discover .business-cover.has-product-photo{height:145px}@media(max-width:720px){.buyer-discover .business-cover.has-product-photo{height:125px}}
+
+#discover{scroll-margin-top:82px}
+
+.nav-icon svg{display:block;width:20px;height:20px}.mobile-nav a span svg{display:block;width:21px;height:21px}.mobile-nav a span{display:grid;place-items:center}
+
+.hero-art.has-custom-image{background:#dbe9d6}.hero-custom-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.hero-art.has-custom-image>:not(.hero-custom-image){display:none}

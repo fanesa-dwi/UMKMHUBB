@@ -1,10 +1,21 @@
 (() => {
   const KEY = 'umkmhub.shared.v1';
   const demoIds = new Set(['hisnesfood', 'dapur-bu-sari', 'ruang-rona', 'kopi-sudut', 'kedai-pagi']);
+  const defaultSiteContent = {
+    hero:{eyebrow:'TUMBUH BERSAMA',title:'Usaha lokal, cerita luar biasa.',description:'Temukan inspirasi, perluas koneksi, dan dukung UMKM Indonesia.',badge:'Bangga produk lokal',imageDataUrl:''},
+    programs:{eyebrow:'PANDUAN UMKMHUB',title:'Belanja lokal atau mulai berjualan',description:'Jawaban singkat tentang cara menemukan produk UMKM dan mengenalkan usahamu di UMKMHUB.',buttonLabel:'Daftarkan usahamu',faqs:[
+      {question:'Bagaimana cara membeli produk di UMKMHUB?',answer:'Jelajahi UMKM terverifikasi, pilih usaha atau produk yang kamu suka, lalu tekan Hubungi via WhatsApp. Kamu bisa bertanya stok dan menyepakati harga, pembayaran, serta pengiriman langsung dengan penjual.'},
+      {question:'Apakah pembeli perlu membuat akun?',answer:'Tidak. Kamu dapat melihat daftar usaha dan produk tanpa akun, kemudian menghubungi penjual langsung melalui WhatsApp.'},
+      {question:'Bagaimana cara mendaftarkan usaha agar bisa tampil?',answer:'Tekan Daftarkan UMKM, lengkapi data pemilik dan usaha, lalu buat kata sandi untuk akun penjual. Admin akan meninjau pendaftaran sebelum usaha ditampilkan.'},
+      {question:'Kapan usaha saya tampil di daftar UMKM?',answer:'Usaha tampil kepada masyarakat setelah pendaftaran diverifikasi oleh admin. Setelah disetujui, masuk dengan nomor WhatsApp dan kata sandi untuk mengelola profil serta produk di dashboard penjual.'},
+      {question:'Bagaimana transaksi dan pengiriman dilakukan?',answer:'UMKMHUB membantu mempertemukan pembeli dan penjual. Detail pesanan, pembayaran, dan pengiriman disepakati langsung antara pembeli dan penjual melalui WhatsApp.'},
+      {question:'Apakah penjual bisa memperkenalkan produk dan kabar usaha?',answer:'Bisa. Penjual yang sudah masuk dapat mengelola profil usaha, menambahkan produk, dan membagikan cerita atau informasi terbaru untuk komunitas.'}
+    ]}
+  };
   const seed = {
     metrics: { total: 0, active: 0, newThisMonth: 0, verified: 0, pending: 0, inactive: 0 },
     businesses: [],
-    posts: [], saved: [], following: [], likes: {}, comments:{}, activeSellerEmail: ''
+    posts: [], saved: [], following: [], likes: {}, comments:{}, activeSellerEmail: '',siteContent:JSON.parse(JSON.stringify(defaultSiteContent))
   };
   let data; let storageReady=true;
   try {
@@ -14,6 +25,9 @@
     data = seed;
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { storageReady=false; }
   }
+  const savedSiteContent=data.siteContent||{};
+  data.siteContent={...defaultSiteContent,...savedSiteContent,hero:{...defaultSiteContent.hero,...(savedSiteContent.hero||{})},programs:{...defaultSiteContent.programs,...(savedSiteContent.programs||{})}};
+  if(!Array.isArray(data.siteContent.programs.faqs))data.siteContent.programs.faqs=JSON.parse(JSON.stringify(defaultSiteContent.programs.faqs));
   const profileDefaults={
     'hisnesfood':{phone:'0812 0000 0000',whatsapp:'0812 0000 0000',productList:[{name:'Chicken Katsu',price:15000},{name:'Nugget Ikan',price:15000},{name:'Dimsum',price:20000}]},
     'dapur-bu-sari':{phone:'6281234567890',whatsapp:'6281234567890',productList:[{name:'Rendang Sapi Premium',price:45000}]},
@@ -55,6 +69,7 @@
     data.metrics=calculateMetrics(data.businesses);
     if(storageReady){try{localStorage.setItem(KEY, JSON.stringify(data));}catch{storageReady=false;}}
     window.dispatchEvent(new CustomEvent('umkmhub:update', { detail: clone(data) }));
+    return storageReady;
   };
   window.addEventListener('storage', event => {
     if (event.key !== KEY || !event.newValue) return;
@@ -63,6 +78,8 @@
   window.UMKMStore = {
     key: KEY,
     get: () => clone(data),
+    getSiteContent:()=>clone(data.siteContent),
+    updateSiteContent(patch){data.siteContent={...data.siteContent,...patch,hero:{...data.siteContent.hero,...(patch.hero||{})},programs:{...data.siteContent.programs,...(patch.programs||{})}};return publish();},
     addBusiness(business) {
       const item = { ...business, id: business.id || `umkm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, status: 'Menunggu Verifikasi', createdAt: new Date().toISOString() };
       item.ownerEmail=(item.ownerEmail||item.email||'').trim().toLowerCase();
